@@ -3,4 +3,11 @@ Most parameters are necessarily arbitrary, since they can not be inferred from t
 
 ## Use
 
-jskemator.py -f examples/example.json
+jskemator.py -f examples/example.json > schema
+
+Now you can edit the schema, to fill in the generated skeleton with real data.
+
+If you modify the original json data (examples/example.json), you can reuse the schema by doing:
+jskemator.py -f examples/example.json -s schema
+
+This allows for iterative development: json_data -> schema ; refine data -> refine schema ; ...

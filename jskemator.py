@@ -2,7 +2,7 @@
 Take JSON data and generate a skeleton for the JSON schema which represents it
 
 Usage:
-  jskemator.py [-f|--filename <filename>] [-h|--help]
+  jskemator.py [-f|--filename <filename>] [-s|--schema <schema>] [-h|--help]
 
 """
 import simplejson as json
@@ -13,84 +13,99 @@ import getopt
 pp = pprint.PrettyPrinter(indent=4)
 
 class Jskemator:
-    def __ini__(self):
-        pass
+    def __init__(self):
+        self.obj = None
+        self.s = None
     def load(self, json_str):
         self.obj = json.loads(json_str)
-    def _skemateDict(self, d):
-        skema = { }
-        skema['description'] = 'Dummy description'
+    def schema(self, schema_str):
+        self.s = json.loads(schema_str)
+    def set_defaults (self, s):
+        default = { }
+        if s != None:
+            default['description'] = s['description']
+            default['additionalProperties'] = s['additionalProperties']
+            default['required'] = s['required']
+        else:
+            default['description'] = 'Dummy description'
+            default['additionalProperties'] = False
+            default['required'] = True
+        return default
+    def _skemateDict(self, d, s):
+        #print "_skemateDict"
+        skema=self.set_defaults(s)
         skema['type'] = 'object'
         skema['properties'] = { }
         for key, value in d.items ():
-            skema['properties'][key] = self._skemate(value)
-        skema['additionalProperties'] = False
+            #print "key > ", key
+            if s == None:
+                new_s = None
+            else:
+                new_s = s['properties'][key]
+            skema['properties'][key] = self._skemate(value, new_s)
         return skema
-    def _skemateList(self, l):
-        skema = { } 
-        skema['description'] = 'Dummy list description'
+    def _skemateList(self, l, s):
+        #print "_skemateList"
+        skema=self.set_defaults(s)
         skema['type'] = 'array'
         skema['properties'] = [ ]
         for value in l:
             skema['properties'].append(self._skemate(value)) 
-        skema['additionalProperties'] = False
         return skema
-    def _skemateStr(self, str):
-        res = {}
-        res['description'] = 'Dummy string description'
+    def _skemateStr(self, str, s):
+        #print "_skemateStr"
+        res=self.set_defaults(s)
         res['type'] = 'string'
-        res['required'] = True
         res['pattern'] = ''
         res['value'] = str
         return res
-    def _skemateInt(self, i):
-        res = {}
-        res['description'] = 'Dummy int description'
+    def _skemateInt(self, i, s):
+        #print "_skemateInt"
+        res=self.set_defaults(s)
         res['type'] = 'integer'
-        res['required'] = True
         res['pattern'] = ''
         res['value'] = i
         return res
-    def _skemateFloat(self, f):
-        res = {}
-        res['description'] = 'Dummy float description'
+    def _skemateFloat(self, f, s):
+        print "_skemateFloat"
+        res=self.set_defaults(s)
         res['type'] = 'float'
-        res['required'] = True
         res['pattern'] = ''
         res['value'] = f
         return res
-    def _skemate(self, o):
+    def _skemate(self, o, s=None):
         if isinstance(o, (list, tuple)):
-            return self._skemateList(o)
+            return self._skemateList(o, s)
         elif isinstance(o, dict):
-            return self._skemateDict(o)
+            return self._skemateDict(o, s)
         elif isinstance(o, str):
-            return self._skemateStr(o)
+            return self._skemateStr(o, s)
         elif isinstance(o, str):
-            return self._skemateStr(o)
+            return self._skemateStr(o, s)
         elif isinstance(o, int):
-            return self._skemateInt(o)
+            return self._skemateInt(o, s)
         elif isinstance(o, long):
-            return self._skemateLong(o)
+            return self._skemateLong(o, s)
         elif isinstance(o, float):
-            return self._skemateFloat(o)
+            return self._skemateFloat(o, s)
         elif o == None:
-            return self._skemateNone(o)
+            return self._skemateNone(o, s)
         elif o == False:
-            return self._skemateFalse(o)
+            return self._skemateFalse(o, s)
         elif o == True:
-            return self._skemateTrue(o)
+            return self._skemateTrue(o, s)
     def skemate(self):
-        return self._skemate(self.obj)
+        return self._skemate(self.obj, self.s)
         
 def usage():
     print __doc__
     
 def process_options(argv):
   filename = None
+  schema = None
   h = False
   try:
-    opts, args = getopt.getopt(argv[1:], "f:h", ['filename=', 'help'])
+    opts, args = getopt.getopt(argv[1:], "f:s:h", ['filename=', 'schema', 'help'])
   except getopt.GetoptError, err:
     # print help information and exit:
     print str(err)
@@ -99,12 +114,14 @@ def process_options(argv):
   for o, a in opts:
     if o in ("-f", "--filename"):
       filename = a
+    elif o in ("-s", "--schema"):
+      schema = a
     elif o in ("-h", "--help"):
       h = True
-  return filename, h
+  return filename, schema, h
 
 def main():
-    filename, h = process_options(sys.argv)
+    filename, schema, h = process_options(sys.argv)
     if h or filename == None:
         usage ()
         sys.exit(0)
@@ -116,6 +133,14 @@ def main():
         sys.exit(0)
     json_str = h.read()
     h.close()
+    if schema != None:
+        try:
+            h = open(schema)
+        except:
+            print "Schema %s can not be opened for reading" % (schema)
+            sys.exit(0)
+        schema_str = h.read()
+        jskemator.schema(schema_str)
     jskemator.load(json_str)
     #pp.pprint(jskemator.obj)
     skema = jskemator.skemate()
