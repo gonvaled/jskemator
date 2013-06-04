@@ -25,8 +25,7 @@ import sys
 import getopt
 import os
 
-from   settings1                 import TMP_DIR
-from   curl_support              import CurlSupport
+from   wav.config.settings1 import TMP_DIR
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -220,6 +219,7 @@ def main():
         # pp.pprint(jskemator.obj)
         # pp.pprint(skema1)
     if options['action'] == 'download-and-compare':
+        from wav.curl_support import CurlSupport
         curl = CurlSupport(TMP_DIR)
         url1 = options['url1']
         url2 = options['url2']
