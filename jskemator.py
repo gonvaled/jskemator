@@ -25,7 +25,7 @@ import sys
 import getopt
 import os
 
-from   wav.config.settings1 import TMP_DIR
+from   wav.config.tree import TMP_DIR
 
 pp = pprint.PrettyPrinter(indent=4)
 
