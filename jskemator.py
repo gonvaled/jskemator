@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 """
 Take JSON data and generate a skeleton for the JSON schema which represents it
 
