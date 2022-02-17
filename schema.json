@@ -1,0 +1,24 @@
+{
+    "description": "Dummy description",
+    "additionalProperties": false,
+    "required": true,
+    "type": "object",
+    "properties": {
+        "foo": {
+            "description": "Dummy description",
+            "additionalProperties": false,
+            "required": true,
+            "type": "string",
+            "pattern": "",
+            "value": "lorem"
+        },
+        "bar": {
+            "description": "Dummy description",
+            "additionalProperties": false,
+            "required": true,
+            "type": "string",
+            "pattern": "",
+            "value": "ipsum"
+        }
+    }
+}
